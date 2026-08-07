@@ -3,8 +3,6 @@ package com.dailyapps.vividpath.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.dailyapps.vividpath.data.model.DailyIntention
-import com.dailyapps.vividpath.data.model.FocusSession
 import com.dailyapps.vividpath.data.model.PathItem
 import com.dailyapps.vividpath.data.model.PathPriority
 import com.dailyapps.vividpath.data.model.PathStatus
@@ -13,11 +11,9 @@ import com.dailyapps.vividpath.data.repository.VividRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class HomeUiState(
@@ -68,9 +64,12 @@ class VividViewModel(application: Application) : AndroidViewModel(application) {
                 repo.getPathItems(),
                 repo.countCompleted(),
                 repo.countTotal(),
-                repo.totalFocusMinutes(),
-                repo.getReflection()
-            ) { intention, items, completed, total, focusMin, refl ->
+                repo.totalFocusMinutes()
+            ) { intention, items, completed, total, focusMin ->
+                Triple(intention, items, Triple(completed, total, focusMin))
+            }.combine(repo.getReflection()) { triple, refl ->
+                val (intention, items, counts) = triple
+                val (completed, total, focusMin) = counts
                 HomeUiState(
                     intention = intention?.intention ?: "",
                     pathItems = items,
@@ -191,12 +190,6 @@ class VividViewModel(application: Application) : AndroidViewModel(application) {
     private fun finishTimer() {
         viewModelScope.launch {
             val state = _timerState.value
-            state.sessionId?.let { id ->
-                // We don't have the full session object easily; create a completed one conceptually
-                // For simplicity the repository already marked started; we mark completed via update if needed.
-                // Since we inserted with completed=false, we need a way to update. For this version we re-insert logic is simplified.
-            }
-            // Mark linked item in progress or done optionally
             _timerState.value = state.copy(isRunning = false, remainingSeconds = 0)
         }
     }
@@ -204,8 +197,6 @@ class VividViewModel(application: Application) : AndroidViewModel(application) {
     fun completeCurrentSession() {
         viewModelScope.launch {
             val state = _timerState.value
-            // Since we don't keep full session, we just stop and the minutes are already tracked via insert
-            // To properly mark completed we would need to fetch, but for simplicity reset after finish.
             timerJob?.cancel()
             _timerState.value = TimerUiState(selectedMinutes = state.selectedMinutes)
         }
