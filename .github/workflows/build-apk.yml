@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       app_folder:
-        description: 'App folder name under apps/ (e.g. 2026-08-07-FocusTimer)'
+        description: 'App folder name under apps/ (e.g. 2026-08-08-ClarityMatrix)'
         required: false
 
 jobs:
@@ -32,11 +32,23 @@ jobs:
           if [ -n "${{ github.event.inputs.app_folder }}" ]; then
             APP_PATH="apps/${{ github.event.inputs.app_folder }}"
           else
-            # Build the most recently modified app folder
             APP_PATH=$(find apps -mindepth 1 -maxdepth 1 -type d | sort | tail -n 1)
           fi
           echo "app_path=$APP_PATH" >> $GITHUB_OUTPUT
           echo "Building: $APP_PATH"
+
+      - name: Ensure gradle wrapper jar
+        working-directory: ${{ steps.find_app.outputs.app_path }}
+        run: |
+          mkdir -p gradle/wrapper
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "Downloading gradle-wrapper.jar..."
+            curl -sL -o gradle/wrapper/gradle-wrapper.jar \
+              https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar || \
+            curl -sL -o gradle/wrapper/gradle-wrapper.jar \
+              https://github.com/gradle/gradle/raw/v8.7.0/gradle/wrapper/gradle-wrapper.jar
+          fi
+          ls -la gradle/wrapper/ || true
 
       - name: Grant execute permission for gradlew
         working-directory: ${{ steps.find_app.outputs.app_path }}
@@ -48,7 +60,7 @@ jobs:
           if [ -f "./gradlew" ]; then
             ./gradlew assembleDebug --stacktrace
           else
-            echo "No gradlew found. Creating minimal structure..."
+            echo "No gradlew found."
             exit 1
           fi
 
