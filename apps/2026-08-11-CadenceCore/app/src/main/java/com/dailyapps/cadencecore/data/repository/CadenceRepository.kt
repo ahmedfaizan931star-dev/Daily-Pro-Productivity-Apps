@@ -10,6 +10,7 @@ import com.dailyapps.cadencecore.data.model.Reflection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -33,29 +34,32 @@ class CadenceRepository(context: Context) {
         ) { habits, logs ->
             habits.map { habit ->
                 val todayCount = logs.find { it.habitId == habit.id }?.count ?: 0
-                val streak = calculateStreak(habit.id)
+                // Streak calculated simply from today's log presence for UI; full streak is best-effort
+                val streak = if (todayCount > 0) 1 else 0
                 HabitWithProgress(habit, todayCount, streak)
             }
+        }
+    }
+
+    suspend fun refreshStreaks(habits: List<Habit>): Map<Long, Int> {
+        return habits.associate { habit ->
+            habit.id to calculateStreak(habit.id)
         }
     }
 
     private suspend fun calculateStreak(habitId: Long): Int {
         val logs = habitDao.getLogsForHabit(habitId)
         if (logs.isEmpty()) return 0
-        val dates = logs.map { it.dateKey }.toSet()
+        val dates = logs.filter { it.count > 0 }.map { it.dateKey }.toSet()
         var streak = 0
         var day = LocalDate.now()
+        // Count consecutive days ending today or yesterday
+        if (!dates.contains(day.format(dateFormatter))) {
+            day = day.minusDays(1)
+        }
         while (dates.contains(day.format(dateFormatter))) {
             streak++
             day = day.minusDays(1)
-        }
-        // If today not done yet, check yesterday start
-        if (streak == 0 && dates.contains(LocalDate.now().minusDays(1).format(dateFormatter))) {
-            day = LocalDate.now().minusDays(1)
-            while (dates.contains(day.format(dateFormatter))) {
-                streak++
-                day = day.minusDays(1)
-            }
         }
         return streak
     }
@@ -68,31 +72,14 @@ class CadenceRepository(context: Context) {
         habitDao.deleteHabit(id)
     }
 
-    suspend fun toggleHabit(habitId: Long) {
-        val today = todayKey()
-        val existing = habitDao.getLogForDay(habitId, today)
-        if (existing == null) {
-            habitDao.insertLog(HabitLog(habitId = habitId, dateKey = today, count = 1))
-        } else {
-            // Toggle off by deleting conceptually - we just leave or set count 0; for simplicity re-insert higher or remove
-            // Simple: increment if under target, else reset to 0 by not tracking 0
-            val newCount = if (existing.count >= 1) 0 else 1
-            if (newCount == 0) {
-                // Room has no delete by object easily; re-insert with 0 is ok for query logic
-                habitDao.insertLog(existing.copy(count = 0))
-            } else {
-                habitDao.insertLog(existing.copy(count = 1))
-            }
-        }
-    }
-
     suspend fun logHabit(habitId: Long) {
         val today = todayKey()
         val existing = habitDao.getLogForDay(habitId, today)
         if (existing == null) {
             habitDao.insertLog(HabitLog(habitId = habitId, dateKey = today, count = 1))
         } else {
-            habitDao.insertLog(existing.copy(count = existing.count + 1))
+            val newCount = if (existing.count >= 1) 0 else 1
+            habitDao.insertLog(existing.copy(count = newCount))
         }
     }
 
