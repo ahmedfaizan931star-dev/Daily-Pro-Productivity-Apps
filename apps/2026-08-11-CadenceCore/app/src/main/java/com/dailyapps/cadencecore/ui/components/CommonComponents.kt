@@ -1,6 +1,7 @@
 package com.dailyapps.cadencecore.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -187,13 +188,13 @@ fun MoodSelector(
                         if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                         else Color.Transparent
                     )
+                    .clickable { onSelect(value) }
                     .padding(4.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = emoji,
-                    fontSize = if (isSelected) 28.sp else 24.sp,
-                    modifier = Modifier
+                    fontSize = if (isSelected) 28.sp else 24.sp
                 )
             }
         }
