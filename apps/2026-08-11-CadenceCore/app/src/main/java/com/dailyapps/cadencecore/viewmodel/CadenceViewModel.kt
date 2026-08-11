@@ -12,7 +12,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -47,30 +46,36 @@ class CadenceViewModel(application: Application) : AndroidViewModel(application)
         repository.getFocusMinutesToday(),
         repository.getSessionsToday(),
         repository.getReflectionToday(),
-        _timerSeconds,
-        _isRunning,
-        _selectedMinutes,
-        _mood,
-        _energy,
-        _reflectionText
-    ) { values ->
-        @Suppress("UNCHECKED_CAST")
+        combine(_timerSeconds, _isRunning, _selectedMinutes, _mood, _energy) { t, r, s, m, e ->
+            TimerSlice(t, r, s, m, e)
+        }
+    ) { habits, focusMin, sessions, reflection, slice ->
         CadenceUiState(
-            habits = values[0] as List<HabitWithProgress>,
-            focusMinutesToday = values[1] as Int,
-            sessionsToday = values[2] as List<FocusSession>,
-            reflection = values[3] as Reflection?,
-            timerSecondsLeft = values[4] as Int,
-            isTimerRunning = values[5] as Boolean,
-            selectedDurationMinutes = values[6] as Int,
-            mood = values[7] as Int,
-            energy = values[8] as Int,
-            reflectionText = values[9] as String
+            habits = habits,
+            focusMinutesToday = focusMin,
+            sessionsToday = sessions,
+            reflection = reflection,
+            timerSecondsLeft = slice.seconds,
+            isTimerRunning = slice.running,
+            selectedDurationMinutes = slice.selected,
+            mood = slice.mood,
+            energy = slice.energy,
+            reflectionText = _reflectionText.value
         )
+    }.combine(_reflectionText) { state, text ->
+        state.copy(reflectionText = text)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = CadenceUiState()
+    )
+
+    private data class TimerSlice(
+        val seconds: Int,
+        val running: Boolean,
+        val selected: Int,
+        val mood: Int,
+        val energy: Int
     )
 
     init {
