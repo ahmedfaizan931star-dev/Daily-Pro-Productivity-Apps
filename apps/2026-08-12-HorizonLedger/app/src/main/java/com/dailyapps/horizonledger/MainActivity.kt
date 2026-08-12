@@ -14,7 +14,7 @@ import com.dailyapps.horizonledger.viewmodel.LedgerViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceedInstanceState)
+        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             HorizonLedgerTheme {
