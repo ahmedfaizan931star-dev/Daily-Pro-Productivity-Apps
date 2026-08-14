@@ -15,7 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier.Modifier
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.dailyapps.apexflow.viewmodel.ApexViewModel
@@ -81,9 +81,6 @@ fun InsightsScreen(viewModel: ApexViewModel) {
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            if (session.note.isNotBlank()) {
-                                Text(session.note, style = MaterialTheme.typography.bodySmall)
-                            }
                         }
                     }
                 }

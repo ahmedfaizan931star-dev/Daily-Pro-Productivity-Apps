@@ -23,7 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier.Modifier
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,8 +77,7 @@ fun FocusScreen(viewModel: ApexViewModel) {
                 FilterChip(
                     selected = selectedMinutes == m,
                     onClick = { viewModel.setTimerMinutes(m) },
-                    label = { Text("${m}m") },
-                    enabled = !isRunning
+                    label = { Text("${m}m") }
                 )
             }
         }
@@ -93,14 +92,16 @@ fun FocusScreen(viewModel: ApexViewModel) {
                 if (isRunning) viewModel.pauseTimer() else viewModel.startTimer()
             }) {
                 Icon(
-                    if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    imageVector = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = null
                 )
-                Text(if (isRunning) "  Pause" else "  Start")
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(if (isRunning) "Pause" else "Start")
             }
             Button(onClick = { viewModel.resetTimer() }) {
                 Icon(Icons.Default.Refresh, contentDescription = null)
-                Text("  Reset")
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Reset")
             }
         }
 
@@ -110,7 +111,7 @@ fun FocusScreen(viewModel: ApexViewModel) {
             onClick = { viewModel.completeSessionManually() },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Text("Complete Session")
+            Text("Log Session Manually")
         }
     }
 }
