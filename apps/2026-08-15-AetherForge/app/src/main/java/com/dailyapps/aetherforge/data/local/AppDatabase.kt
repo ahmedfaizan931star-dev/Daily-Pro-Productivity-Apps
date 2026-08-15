@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.Update
 import com.dailyapps.aetherforge.data.model.FocusSessionEntity
 import com.dailyapps.aetherforge.data.model.TaskEntity
@@ -50,6 +51,7 @@ interface FocusDao {
 }
 
 @Database(entities = [TaskEntity::class, FocusSessionEntity::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun focusDao(): FocusDao
