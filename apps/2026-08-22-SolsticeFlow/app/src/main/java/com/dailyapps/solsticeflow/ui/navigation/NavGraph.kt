@@ -75,7 +75,7 @@ fun SolsticeNavGraph(viewModel: SolsticeViewModel) {
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = androidx.compose.ui.Modifier.Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) { HomeScreen(viewModel) }
             composable(Screen.Energy.route) { EnergyScreen(viewModel) }
