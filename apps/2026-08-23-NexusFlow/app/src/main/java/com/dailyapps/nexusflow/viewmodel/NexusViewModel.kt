@@ -12,7 +12,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -40,17 +39,17 @@ class NexusViewModel(application: Application) : AndroidViewModel(application) {
         repo.habits,
         repo.tasks,
         _todayFocus,
-        _timerRunning,
-        _remaining,
-        _selectedDuration
-    ) { habits, tasks, focus, running, remaining, duration ->
+        combine(_timerRunning, _remaining, _selectedDuration) { running, remaining, duration ->
+            Triple(running, remaining, duration)
+        }
+    ) { habits, tasks, focus, timerTriple ->
         UiState(
             habits = habits,
             tasks = tasks,
             todayFocusMinutes = focus,
-            isTimerRunning = running,
-            remainingSeconds = remaining,
-            selectedDuration = duration
+            isTimerRunning = timerTriple.first,
+            remainingSeconds = timerTriple.second,
+            selectedDuration = timerTriple.third
         )
     }.stateIn(
         scope = viewModelScope,
