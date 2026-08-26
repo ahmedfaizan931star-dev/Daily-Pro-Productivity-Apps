@@ -11,7 +11,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -34,27 +33,30 @@ class NovaViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedDuration = MutableStateFlow(25)
     private var timerJob: Job? = null
 
-    val uiState: StateFlow<NovaUiState> = combine(
+    private val dataFlow = combine(
         repository.habits,
         repository.tasks,
-        repository.focusMinutesToday(),
+        repository.focusMinutesToday()
+    ) { habits, tasks, focusMin ->
+        Triple(habits, tasks, focusMin)
+    }
+
+    private val timerFlow = combine(
         _timerRunning,
         _timerSeconds,
         _selectedDuration
-    ) { values ->
-        val habits = values[0] as List<Habit>
-        val tasks = values[1] as List<Task>
-        val focusMin = values[2] as Int
-        val running = values[3] as Boolean
-        val seconds = values[4] as Int
-        val duration = values[5] as Int
+    ) { running, seconds, duration ->
+        Triple(running, seconds, duration)
+    }
+
+    val uiState: StateFlow<NovaUiState> = combine(dataFlow, timerFlow) { data, timer ->
         NovaUiState(
-            habits = habits,
-            tasks = tasks,
-            focusMinutesToday = focusMin,
-            isTimerRunning = running,
-            timerSecondsLeft = seconds,
-            selectedDurationMinutes = duration
+            habits = data.first,
+            tasks = data.second,
+            focusMinutesToday = data.third,
+            isTimerRunning = timer.first,
+            timerSecondsLeft = timer.second,
+            selectedDurationMinutes = timer.third
         )
     }.stateIn(
         scope = viewModelScope,
