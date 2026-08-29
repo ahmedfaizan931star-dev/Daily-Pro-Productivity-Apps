@@ -33,10 +33,12 @@ fun WindMapScreen(recent: List<Brief>) {
                         Text(brief.intention.ifBlank { "No intention logged" })
                         Spacer(Modifier.height(8.dp))
                         LinearProgressIndicator(
-                            progress = { brief.energy / 5f },
+                            progress = brief.energy / 5f,
                             modifier = Modifier.fillMaxWidth()
                         )
-                        if (brief.shutDown) Text("Landed ${brief.landingScore}/5 · ${brief.shutdownNote}")
+                        if (brief.shutDown) {
+                            Text("Landed ${brief.landingScore}/5 · ${brief.shutdownNote}")
+                        }
                     }
                 }
             }

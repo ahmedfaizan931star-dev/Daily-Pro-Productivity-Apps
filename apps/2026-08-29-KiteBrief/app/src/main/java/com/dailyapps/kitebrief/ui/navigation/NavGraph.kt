@@ -2,10 +2,10 @@ package com.dailyapps.kitebrief.ui.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Air
-import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Nightlight
+import androidx.compose.material.icons.outlined.NightsStay
+import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -40,25 +40,25 @@ fun KiteNav(vm: KiteViewModel) {
                 NavigationBarItem(
                     selected = route == "home",
                     onClick = { nav.navigate("home") { launchSingleTop = true } },
-                    icon = { Icon(Icons.Outlined.Home, null) },
+                    icon = { Icon(Icons.Outlined.Home, contentDescription = "Brief") },
                     label = { Text("Brief") }
                 )
                 NavigationBarItem(
                     selected = route == "commit",
                     onClick = { nav.navigate("commit") { launchSingleTop = true } },
-                    icon = { Icon(Icons.Outlined.Flag, null) },
+                    icon = { Icon(Icons.Outlined.CheckCircle, contentDescription = "Lift") },
                     label = { Text("Lift") }
                 )
                 NavigationBarItem(
                     selected = route == "land",
                     onClick = { nav.navigate("land") { launchSingleTop = true } },
-                    icon = { Icon(Icons.Outlined.Nightlight, null) },
+                    icon = { Icon(Icons.Outlined.NightsStay, contentDescription = "Land") },
                     label = { Text("Land") }
                 )
                 NavigationBarItem(
                     selected = route == "wind",
                     onClick = { nav.navigate("wind") { launchSingleTop = true } },
-                    icon = { Icon(Icons.Outlined.Air, null) },
+                    icon = { Icon(Icons.Outlined.Timeline, contentDescription = "Wind") },
                     label = { Text("Wind") }
                 )
             }
