@@ -29,7 +29,7 @@ fun StatsScreen(vm: QuillViewModel) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("${state.retentionPct}% estimated hold rate")
                 LinearProgressIndicator(
-                    progress = { state.retentionPct / 100f },
+                    progress = state.retentionPct / 100f,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Text("${state.reviewedToday} cards have at least one review")
