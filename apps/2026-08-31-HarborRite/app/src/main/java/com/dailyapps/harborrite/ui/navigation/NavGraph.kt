@@ -2,10 +2,10 @@ package com.dailyapps.harborrite.ui.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Anchor
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notes
-import androidx.compose.material.icons.filled.Sailing
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.DirectionsBoat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -32,8 +32,8 @@ fun HarborNav(vm: HarborViewModel) {
     val nav = rememberNavController()
     val tabs = listOf(
         Tab("harbor", "Harbor", Icons.Default.Home),
-        Tab("berths", "Berths", Icons.Default.Anchor),
-        Tab("voyages", "Voyages", Icons.Default.Sailing),
+        Tab("berths", "Berths", Icons.Default.Place),
+        Tab("voyages", "Voyages", Icons.Default.DirectionsBoat),
         Tab("rites", "Rites", Icons.Default.Notes)
     )
     val back by nav.currentBackStackEntryAsState()
