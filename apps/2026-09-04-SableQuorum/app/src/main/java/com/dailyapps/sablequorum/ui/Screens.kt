@@ -57,9 +57,7 @@ import java.util.Locale
 fun QuorumRoot(vm: QuorumViewModel) {
     val nav = rememberNavController()
     val state by vm.state.collectAsStateWithLifecycle()
-    Scaffold(
-        bottomBar = { BottomBar(nav) }
-    ) { padding ->
+    Scaffold(bottomBar = { BottomBar(nav) }) { padding ->
         NavHost(
             navController = nav,
             startDestination = "board",
@@ -133,10 +131,14 @@ fun BoardScreen(state: QuorumUiState, vm: QuorumViewModel, nav: NavHostControlle
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(state.visible, key = { it.id }) { item ->
-                    DecisionCard(item, onOpen = {
-                        vm.select(item)
-                        nav.navigate("review")
-                    }, onDelete = { vm.delete(item) })
+                    DecisionCard(
+                        item = item,
+                        onOpen = {
+                            vm.select(item)
+                            nav.navigate("review")
+                        },
+                        onDelete = { vm.delete(item) }
+                    )
                 }
             }
         }
@@ -192,7 +194,8 @@ fun ComposeScreen(state: QuorumUiState, vm: QuorumViewModel) {
         Text("Domain", style = MaterialTheme.typography.labelLarge)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("Work", "Money", "Health", "People", "Craft").forEach { d ->
-                AssistChip(onClick = { vm.setDomain(d) }, label = { Text(if (state.draftDomain == d) "· $d") else d) })
+                val label = if (state.draftDomain == d) "· $d" else d
+                AssistChip(onClick = { vm.setDomain(d) }, label = { Text(label) })
             }
         }
         Text("Urgency: ${state.draftUrgency}")
@@ -208,7 +211,11 @@ fun ComposeScreen(state: QuorumUiState, vm: QuorumViewModel) {
             onValueChange = { vm.setConfidence(it.toInt()) },
             valueRange = 0f..100f
         )
-        Button(onClick = vm::saveDraft, enabled = state.draftTitle.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = vm::saveDraft,
+            enabled = state.draftTitle.isNotBlank(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Lock into the quorum")
         }
         Spacer(Modifier.height(24.dp))
@@ -223,27 +230,27 @@ fun ReviewScreen(state: QuorumUiState, vm: QuorumViewModel) {
         TopAppBar(title = { Text("Review") })
         if (item == null) {
             Text("Select a decision from the board to close the loop.")
-            return
-        }
-        Text(item.title, style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(8.dp))
-        Meta("Domain", item.domain)
-        Meta("Chosen", item.chosen.ifBlank { "—" })
-        Meta("Options", item.options.ifBlank { "—" })
-        Meta("Criteria", item.criteria.ifBlank { "—" })
-        Meta("Expected", item.expectedOutcome.ifBlank { "—" })
-        Meta("Confidence at capture", "${item.confidence}%")
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = state.reviewNotes,
-            onValueChange = vm::setReviewNotes,
-            label = { Text("What actually happened?") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 4
-        )
-        Spacer(Modifier.height(12.dp))
-        Button(onClick = vm::closeReview, modifier = Modifier.fillMaxWidth()) {
-            Text("Mark reviewed")
+        } else {
+            Text(item.title, style = MaterialTheme.typography.headlineMedium)
+            Spacer(Modifier.height(8.dp))
+            Meta("Domain", item.domain)
+            Meta("Chosen", item.chosen.ifBlank { "—" })
+            Meta("Options", item.options.ifBlank { "—" })
+            Meta("Criteria", item.criteria.ifBlank { "—" })
+            Meta("Expected", item.expectedOutcome.ifBlank { "—" })
+            Meta("Confidence at capture", "${item.confidence}%")
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = state.reviewNotes,
+                onValueChange = vm::setReviewNotes,
+                label = { Text("What actually happened?") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 4
+            )
+            Spacer(Modifier.height(12.dp))
+            Button(onClick = vm::closeReview, modifier = Modifier.fillMaxWidth()) {
+                Text("Mark reviewed")
+            }
         }
     }
 }
