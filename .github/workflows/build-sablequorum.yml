@@ -1,0 +1,44 @@
+name: Build SableQuorum APK
+
+on:
+  push:
+    paths:
+      - 'apps/2026-09-04-SableQuorum/**'
+      - '.github/workflows/build-sablequorum.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/2026-09-04-SableQuorum
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Ensure gradle wrapper jar
+        run: |
+          mkdir -p gradle/wrapper
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            curl -sL -o gradle/wrapper/gradle-wrapper.jar \
+              https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar || \
+            curl -sL -o gradle/wrapper/gradle-wrapper.jar \
+              https://github.com/gradle/gradle/raw/v8.7.0/gradle/wrapper/gradle-wrapper.jar
+          fi
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew || true
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sablequorum-debug-apk
+          path: apps/2026-09-04-SableQuorum/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
