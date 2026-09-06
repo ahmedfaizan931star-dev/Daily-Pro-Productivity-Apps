@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.dailyapps.emberwake.domain.Commitment
 import com.dailyapps.emberwake.domain.EmberState
 import com.dailyapps.emberwake.domain.RitualStep
+import java.util.Locale
 
 @Composable
 fun TodayScreen(
@@ -166,6 +167,7 @@ fun InsightsScreen(state: EmberState) {
     else state.history.map { it.energy }.average()
     val wakeRate = if (state.history.isEmpty()) 0.0
     else state.history.map { it.wakeDone / 5.0 }.average()
+    val avgLabel = String.format(Locale.US, "%.1f", avg)
     LazyColumn(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             Text("Insights", style = MaterialTheme.typography.headlineLarge)
@@ -178,7 +180,7 @@ fun InsightsScreen(state: EmberState) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
                         Text("21-day pulse", fontWeight = FontWeight.SemiBold)
                     }
-                    Text("Average energy  ${\"%.1f\".format(avg)} / 10", style = MaterialTheme.typography.titleLarge)
+                    Text("Average energy  $avgLabel / 10", style = MaterialTheme.typography.titleLarge)
                     Text("Wake ritual completion  ${(wakeRate * 100).toInt()}%")
                     Text("Snapshots stored  ${state.history.size}")
                 }
