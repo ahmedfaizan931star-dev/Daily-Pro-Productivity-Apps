@@ -14,10 +14,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Card
@@ -115,6 +115,7 @@ fun KeelApp(state: WeekState, vm: KeelViewModel, nav: NavHostController) {
 
 @Composable
 private fun KeelScreen(state: WeekState, vm: KeelViewModel) {
+    val logged = String.format("%.1f", state.loggedHours)
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -127,7 +128,7 @@ private fun KeelScreen(state: WeekState, vm: KeelViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
-                "${\"%.1f\".format(state.loggedHours)} / ${state.capacityHours}h logged",
+                logged + " / " + state.capacityHours + "h logged",
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(top = 6.dp)
             )
@@ -142,6 +143,7 @@ private fun KeelScreen(state: WeekState, vm: KeelViewModel) {
 private fun StoneCard(stone: KeelStone, vm: KeelViewModel) {
     var title by remember(stone.id, stone.title) { mutableStateOf(stone.title) }
     var why by remember(stone.id, stone.why) { mutableStateOf(stone.why) }
+    val logged = String.format("%.1f", stone.hoursLogged)
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -178,7 +180,7 @@ private fun StoneCard(stone: KeelStone, vm: KeelViewModel) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "${\"%.1f\".format(stone.hoursLogged)}h of ${stone.hoursTarget}h",
+                logged + "h of " + stone.hoursTarget + "h",
                 style = MaterialTheme.typography.labelLarge
             )
             LinearProgressIndicator(
@@ -205,17 +207,15 @@ private fun CarveScreen(state: WeekState, vm: KeelViewModel) {
             Text("Carve a block against a stone.", style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(8.dp))
             state.stones.forEach { stone ->
+                val label = stone.title.ifBlank { "Untitled" }
                 FilledTonalButton(
                     onClick = { selected = stone.id },
                     modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
                 ) {
-                    Text(
-                        if (stone.id == selected) "\u25CF ${stone.title.ifBlank { \"Untitled\" }}"
-                        else stone.title.ifBlank { "Untitled" }
-                    )
+                    Text(if (stone.id == selected) "* " + label else label)
                 }
             }
-            Text("Minutes: $minutes")
+            Text("Minutes: " + minutes)
             Slider(
                 value = minutes.toFloat(),
                 onValueChange = { minutes = it.roundToInt() },
@@ -244,7 +244,7 @@ private fun CarveScreen(state: WeekState, vm: KeelViewModel) {
             val stoneTitle = state.stones.firstOrNull { it.id == carve.stoneId }?.title ?: "Stone"
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
-                    Text("$stoneTitle \u00B7 ${carve.dayLabel} \u00B7 ${carve.minutes}m")
+                    Text(stoneTitle + " - " + carve.dayLabel + " - " + carve.minutes + "m")
                     if (carve.note.isNotBlank()) Text(carve.note, style = MaterialTheme.typography.bodyLarge)
                 }
             }
@@ -255,11 +255,12 @@ private fun CarveScreen(state: WeekState, vm: KeelViewModel) {
 @Composable
 private fun ReviewScreen(state: WeekState, vm: KeelViewModel) {
     var note by remember(state.reviewNote) { mutableStateOf(state.reviewNote) }
+    val load = String.format("%.0f", state.loadPercent * 100)
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Weekly review", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(8.dp))
-        Text("Done: ${state.stones.count { it.done }} / ${state.stones.size}")
-        Text("Load: ${\"%.0f\".format(state.loadPercent * 100)}% of capacity")
+        Text("Done: " + state.stones.count { it.done } + " / " + state.stones.size)
+        Text("Load: " + load + "% of capacity")
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(
             value = note,
@@ -279,9 +280,9 @@ private fun CapacityScreen(state: WeekState, vm: KeelViewModel) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Weekly capacity", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(8.dp))
-        Text("Honest hours you can actually give deep work — not calendar fiction.")
+        Text("Honest hours you can actually give deep work - not calendar fiction.")
         Spacer(Modifier.height(16.dp))
-        Text("$cap hours")
+        Text("" + cap + " hours")
         Slider(
             value = cap.toFloat(),
             onValueChange = {
